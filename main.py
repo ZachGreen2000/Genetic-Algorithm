@@ -65,7 +65,7 @@ for arrangement, score in all_results:
 ####################################################################
 # building the genetic algorithm for party arrangement problem
 #settings
-new_or_old = False # change this to false to run original relationship matrix and true to run on generated matrix
+new_or_old = True # change this to false to run original relationship matrix and true to run on generated matrix
 #num_friends = 20 this is now set in loop
 population_size = 10 # this is now set in the loop
 number_of_parties = 2
@@ -311,7 +311,7 @@ for num_friends in friend_sizes:
         plt.legend()
         plt.grid()
         plt.savefig(f"best_fitness_{num_friends}_friends_{pop}_population.png")
-        plt.show()
+        #plt.show()
 
         # average score graph
         plt.figure(figsize=(10,6))
@@ -323,7 +323,7 @@ for num_friends in friend_sizes:
         plt.legend()
         plt.grid()
         plt.savefig(f"average_fitness_{num_friends}_friends_{pop}_population.png")
-        plt.show()
+        #plt.show()
 
 # dataframe statistics and visualisation 
 summary_data = []
