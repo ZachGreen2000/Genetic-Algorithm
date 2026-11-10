@@ -59,12 +59,15 @@ print(f"The best fitness score is: {best_score}")
 for arrangement, score in all_results:
     print(f"Arrangement: {arrangement}, Fitness Score: {score}")
 """
-# building the genetic algorithm for party arrangement problem
 
+####################################################################
+#      Genetic Algorithm
+####################################################################
+# building the genetic algorithm for party arrangement problem
 #settings
 new_or_old = False # change this to false to run original relationship matrix and true to run on generated matrix
 #num_friends = 20 this is now set in loop
-population_size = 10
+population_size = 10 # this is now set in the loop
 number_of_parties = 2
 party_size = 0
 
@@ -229,10 +232,13 @@ def main_GA(relationships, population_size, num_generations, mutation_rate, tour
     return best_individual, best_score, fitness_history, average_fitness_history
 
 # outer loop to number of friends each time to test how size of relationship matrix affects the GA's performance
+
 if new_or_old:
     friend_sizes = [10, 20, 30, 40, 50]
+    pop_sizes = [10, 20, 30, 40, 50]
 else:
     friend_sizes = [len(friends)]
+    pop_sizes = [2, 4, 6, 8, 10]
 
 all_experiments = {}
 
@@ -246,89 +252,99 @@ for num_friends in friend_sizes:
     else:
         current_friends = friends
         current_relationships = relationships
-    
-    all_best_scores = []
-    all_average_scores = []
-    all_final_scores = []
+    for pop in pop_sizes:
+        print(f"\n========== Testing Population Size {pop} ========")
+        #set population size to test on each run
+        if new_or_old:
+            population_size = pop
+        else:
+            population_size = pop
+        
+        all_best_scores = []
+        all_average_scores = []
+        all_final_scores = []
 
-    best_overall_score = float("-inf")
-    best_overall_arrangement = None
-    #run algorithm
-    for run in range(num_runs):
-        best_arrangement, best_score, fitness_history, average_fitness_history = main_GA(current_relationships, population_size, num_generations, mutation_rate, tournament_size, number_of_parties)
-        all_best_scores.append(fitness_history)
-        all_average_scores.append(average_fitness_history)
-        all_final_scores.append(best_score)
-        # keep track of best score and arrangement
-        if best_score > best_overall_score:
-            best_overall_score = best_score
-            best_overall_arrangement = best_arrangement
+        best_overall_score = float("-inf")
+        best_overall_arrangement = None
+        #run algorithm
+        for run in range(num_runs):
+            best_arrangement, best_score, fitness_history, average_fitness_history = main_GA(current_relationships, population_size, num_generations, mutation_rate, tournament_size, number_of_parties)
+            all_best_scores.append(fitness_history)
+            all_average_scores.append(average_fitness_history)
+            all_final_scores.append(best_score)
+            # keep track of best score and arrangement
+            if best_score > best_overall_score:
+                best_overall_score = best_score
+                best_overall_arrangement = best_arrangement
 
-    # adding the experiment to storage
-    all_experiments[num_friends] = {
-        "best_histories": all_best_scores,
-        "average_histories": all_average_scores,
-        "final_scores": all_final_scores,
-        "best_arrangement": best_overall_arrangement,
-        "best_score": best_overall_score
-        }
-    # print best arrangements and friends in party
-    print(f"Best arrengement: {best_overall_arrangement}, \n Best fitness score {best_overall_score}")
-    # assign names based on old or random matrix
-    for i, party in enumerate(best_arrangement):
-        party_names = [current_friends[friend] for friend in party]
-        print(f"Party {i + 1}: {party_names}")
+        if num_friends not in all_experiments:
+            all_experiments[num_friends] = {}
+        # adding the experiment to storage
+        all_experiments[num_friends][pop] = {
+            "best_histories": all_best_scores,
+            "average_histories": all_average_scores,
+            "final_scores": all_final_scores,
+            "best_arrangement": best_overall_arrangement,
+            "best_score": best_overall_score
+            }
+        # print best arrangements and friends in party
+        print(f"Best arrengement: {best_overall_arrangement}, \n Best fitness score {best_overall_score}")
+        # assign names based on old or random matrix
+        for i, party in enumerate(best_arrangement):
+            party_names = [current_friends[friend] for friend in party]
+            print(f"Party {i + 1}: {party_names}")
 
-    # calculate stats for all runs
-    print("Highest: ", max(all_final_scores))
-    print("Lowest: ", min(all_final_scores))
-    print("Mean: ", np.mean(all_final_scores))
-    print("Standard deviation: ", np.std(all_final_scores))
+        # calculate stats for all runs
+        print("Highest: ", max(all_final_scores))
+        print("Lowest: ", min(all_final_scores))
+        print("Mean: ", np.mean(all_final_scores))
+        print("Standard deviation: ", np.std(all_final_scores))
 
-# plot progress of generations on graph
-for n in friend_sizes:
-    # best score graph
-    plt.figure(figsize=(10,6))
-    for i, history in enumerate(all_experiments[n]["best_histories"]):
-        plt.plot(history, label=f"Best Fitness: Run {i + 1}")
-    plt.xlabel("Generation")
-    plt.ylabel("Best Fitness score")
-    plt.title(f"Genetic Algorithm - Best Fitness: {n} Friends")
-    plt.legend()
-    plt.grid()
-    plt.savefig(f"best_fitness_{n}_friends.png")
-    plt.show()
+        # plot progress of generations on graph
+        # best score graph
+        plt.figure(figsize=(10,6))
+        for i, history in enumerate(all_experiments[num_friends][pop]["best_histories"]):
+            plt.plot(history, label=f"Best Fitness: Run {i + 1}")
+        plt.xlabel("Generation")
+        plt.ylabel("Best Fitness score")
+        plt.title(f"Genetic Algorithm - Best Fitness: {num_friends} Friends : {pop} Population")
+        plt.legend()
+        plt.grid()
+        plt.savefig(f"best_fitness_{num_friends}_friends_{pop}_population.png")
+        plt.show()
 
-    # average score graph
-    plt.figure(figsize=(10,6))
-    for i, history in enumerate(all_experiments[n]["average_histories"]):
-        plt.plot(history, linestyle="--", label=f"Average Fitness: Run {i + 1}")
-    plt.xlabel("Generation")
-    plt.ylabel("Average Fitness score")
-    plt.title(f"Genetic Algorithm - Average Fitness: {n} Friends")
-    plt.legend()
-    plt.grid()
-    plt.savefig(f"average_fitness_{n}_friends.png")
-    plt.show()
+        # average score graph
+        plt.figure(figsize=(10,6))
+        for i, history in enumerate(all_experiments[num_friends][pop]["average_histories"]):
+            plt.plot(history, linestyle="--", label=f"Average Fitness: Run {i + 1}")
+        plt.xlabel("Generation")
+        plt.ylabel("Average Fitness score")
+        plt.title(f"Genetic Algorithm - Average Fitness: {num_friends} Friends : {pop} Population")
+        plt.legend()
+        plt.grid()
+        plt.savefig(f"average_fitness_{num_friends}_friends_{pop}_population.png")
+        plt.show()
 
 # dataframe statistics and visualisation 
 summary_data = []
 
 for n in friend_sizes:
-    scores = all_experiments[n]["final_scores"]
-    # normalise fitness socres
-    max_possible_fitness = 4 * math.comb(n // 2, 2)
-    normalised_scores = [score / max_possible_fitness for score in scores]
+    for pop in pop_sizes:
+        scores = all_experiments[n][pop]["final_scores"]
+        # normalise fitness socres
+        max_possible_fitness = 4 * math.comb(n // 2, 2)
+        normalised_scores = [score / max_possible_fitness for score in scores]
 
-    summary_data.append({
-        "Number of Friends": n,
-        "Highest Fitness": max(scores),
-        "Lowest Fitness": min(scores),
-        "Mean Fitness": np.mean(scores),
-        "Normalised Fitness": np.mean(normalised_scores),
-        "Normalised Standard Deviation": np.std(normalised_scores),
-        "Standard Deviation": np.std(scores)
-    })
+        summary_data.append({
+            "Number of Friends": n,
+            "Population Size": pop,
+            "Highest Fitness": max(scores),
+            "Lowest Fitness": min(scores),
+            "Mean Fitness": np.mean(scores),
+            "Normalised Fitness": np.mean(normalised_scores),
+            "Normalised Standard Deviation": np.std(normalised_scores),
+            "Standard Deviation": np.std(scores)
+        })
 
 df = pd.DataFrame(summary_data)
 print(df)
@@ -348,7 +364,7 @@ plt.ylabel("Mean Final Fitness")
 plt.title("Mean GA Fitness Against Problem Size")
 plt.legend()
 plt.grid()
-plt.savefig("mean_fitness_vs_no_friends.png")
+plt.savefig("mean_fitness_vs_num_friends.png")
 plt.show()
 
 #graph to show standard deviation against problem size
@@ -364,9 +380,11 @@ plt.ylabel("Standard Deviation")
 plt.title("GA Result Variation Against Problem Size")
 plt.legend()
 plt.grid()
-plt.savefig("std_vs_no_friends.png")
+plt.savefig("std_vs_num_friends.png")
 plt.show()
 
+# END
+################################
 """"
 parents = select_parents(create_population(population_size), relationships, num_parents=6, tournament_size=2)
 for i, parent in enumerate(parents):
